@@ -1,25 +1,27 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
 import './App.css';
+import { Button, TextField } from '@material-ui/core';
 
-function App() {
+const App = () => {
+  const [graph, setGraph] = useState([])
+  const [query, setQuery] = useState('')
+
+  const handleSubmit = async () => {
+    const res = await fetch(`https://avatar.labpro.dev/friends/${query}`)
+    const data = await res.json()
+    data.status === 200 && setGraph([...graph, data.payload])
+  }
+
+  useEffect(() => {
+    
+    console.log(graph)
+  }, [graph])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <main>
+        <TextField label="Query ID" onChange={e => setQuery(e.target.value)} value={query}/>
+        <Button variant="contained" onClick={handleSubmit}>Fetch</Button>
+    </main>
   );
 }
 
