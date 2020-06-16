@@ -1,8 +1,7 @@
 import React from 'react'
 
-export const GOD_NAME = 'God'
-export const X_MULTIPLIER = 70
-export const Y_MULTIPLIER = 45
+export const X_MULTIPLIER = 60
+export const Y_MULTIPLIER = 20
 
 export const Loading = () => <div style={{ marginTop: "2rem" }}>Loading...</div>
 
@@ -16,7 +15,7 @@ export const createNewLine = (x1, y1, x2, y2, emphasized) => {
 
     const viz = document.getElementsByClassName('viz')[0]
     if(viz){
-        const line = `<div class='line' style="width: ${distance}px; background: ${emphasized ? 'var(--ternary)' : 'green'};  margin-top: ${ymid}px; margin-left: ${xmid - distance/2}px; transform: rotate(${salopeInDegree}deg); "></div>`
+        const line = `<div class='line' style="z-index: -200; width: ${distance}px; background: ${emphasized ? 'var(--ternary)' : 'green'};  margin-top: ${ymid}px; margin-left: ${xmid - distance/2}px; transform: rotate(${salopeInDegree}deg); "></div>`
         viz.innerHTML += line
     }
 }
