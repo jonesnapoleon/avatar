@@ -1,123 +1,51 @@
-import React, { useState, useEffect } from 'react';
-import './App.css';
-import { Button, TextField } from '@material-ui/core';
-import { getRandomInt, isSafe, X_MULTIPLIER, Y_MULTIPLIER, createNewLine, refreshLine } from './utils'
+import React, { useState } from 'react'
+import { Button, TextField } from '@material-ui/core'
+import { Graph } from 'react-d3-graph'
+import { graphConfig, graphNodeColor } from "./utils"
+import './App.css'
 
-const App = () => {
-  const [graph, setGraph] = useState([])
+export default () => {
   const [query, setQuery] = useState('')
   const [fetchedId, setFetchedId] = useState([])
-  const [existingId, setExistingId] = useState([])
-  const [positions, setPositions] = useState([])
+  const [data, setData] = useState({ nodes: [], links: [] })
 
-  const getDataFromId = (id) => {
-    for(let vertex of graph){
-      if(String(vertex.id) === String(id)){
-        return Object.assign({}, vertex)
-      }
-      for(let friend of vertex.friends){
-        if(String(friend.id) === String(id)){
-          return Object.assign({}, friend)
-        }
-      }
-    }
-  }
-
-  useEffect(() => {
-    let positionHolder = []
-    existingId.forEach(id => {
-      let x, y
-      do {
-        x = getRandomInt(1, 20)
-        y = getRandomInt(1, 20)
-      } while(!isSafe(positionHolder, x, y))
-      positionHolder.push([x, y])
-    })
-    setPositions(positionHolder)
-  }, [fetchedId, existingId])
-
-  const handleExisting = (payload) => {
-    let recordedId = existingId
-    if(!recordedId.includes(payload.id)){
-      recordedId.push(payload.id)
-    }
-    payload.friends.forEach(friend => {
-      if(!recordedId.includes(friend.id)){
-        recordedId.push(friend.id)
-      }
-    });
-    setExistingId(recordedId)
+  const handleData = (inputNode) => {
+    let temp = data
+    temp.nodes = Array.from(new Set([...temp.nodes, { id: inputNode.id, name: inputNode.name, element: inputNode.element }, ...inputNode.friends]))
+    temp.nodes.map(node => node.color = graphNodeColor[node.element])
+    temp.nodes.map(node => node.highlightStrokeColor = graphNodeColor[node.element])
+    let inputToFriendNode = inputNode.friends.map(friendNode => friendNode.id !== inputNode.id ? { source: inputNode.id, target: friendNode.id } : null)
+    let friendToInputNode = inputNode.friends.map(friendNode => friendNode.id !== inputNode.id ? { source: friendNode.id, target: inputNode.id } : null)
+    temp.links = Array.from(new Set([...temp.links, ...inputToFriendNode, ...friendToInputNode])).filter(x => x !== null)
+    setData(temp)
   }
 
   const handleIndex = async (id) => {
-    console.log(id)
-    if(fetchedId.includes(id)){ alert("Fetched before!"); return }
+    if (fetchedId.includes(id)) { alert('Fetched before!'); return }
     const res = await fetch(`https://avatar.labpro.dev/friends/${id}`)
     const data = await res.json()
-    if(data.status === 200){
-      setGraph([...graph, data.payload])
+    if (data.status === 200) {
+      handleData(data.payload)
       setFetchedId([...fetchedId, data.payload.id])
-      handleExisting(data.payload)
-    }
-    else {
+    } else {
       alert(data.message)
     }
   }
-
-  const handleSubmit = async () => {
-    const trimmed = query.trim()
-    if (fetchedId.includes(trimmed)){ alert("Fetched before!"); return }
-    const res = await fetch(`https://avatar.labpro.dev/friends/${trimmed}`)
-    const data = await res.json()
-    if(data.status === 200){
-      setGraph([...graph, data.payload])
-      setFetchedId([...fetchedId, data.payload.id])
-      handleExisting(data.payload)
-    }
-    else {
-      alert(data.message)
-    }
-  }
-
-  useEffect(() => {
-    if(existingId.length > 0){
-      refreshLine()
-      graph.forEach(vertex => {
-        const vertexIdx = existingId.indexOf(vertex.id)
-        const vertexPosition = positions[vertexIdx]
-        vertex.friends.forEach(friend => {
-          const friendIdx = existingId.indexOf(friend.id)
-          const friendPosition = positions[friendIdx]
-          try {
-            createNewLine(vertexPosition[0] * X_MULTIPLIER, vertexPosition[1] * Y_MULTIPLIER, friendPosition[0] * X_MULTIPLIER, friendPosition[1] * Y_MULTIPLIER, true)
-          }
-          catch {
-            refreshLine()
-          }
-        })
-      })
-    }
-  }, [graph, positions, existingId])
+  const handleSubmit = async () => await handleIndex(query.trim())
 
   return (
     <main id='girlfriends'>
-        <TextField label="Query ID" type='number' onChange={e => setQuery(e.target.value)} value={query}/>
-        <Button variant="contained" onClick={handleSubmit}>Fetch</Button>
-        <div className='viz'>
-        {
-          fetchedId.length > 0 && 
-          existingId.map(getDataFromId).map((data, i) => {
-            return(
-              positions && positions[i][0] && positions[i][1] && 
-              <div key={data.id} onClick={() => handleIndex(data.id)} className={fetchedId.includes(data.id) ? 'dot king' : 'dot' } id={'id-'+i} style={{ marginLeft: positions[i][0] * X_MULTIPLIER, marginTop: positions[i][1] * Y_MULTIPLIER, marginBottom: 3 }}>
-                {data.name}
-              </div>
-            )
-          })
-        }
-        </div>
-    </main>
-  );
+      <TextField label="Query ID" type='number' onChange={e => setQuery(e.target.value)} value={query} />
+      <Button variant="contained" color='primary' onClick={handleSubmit}>Fetch</Button>
+      {
+        data && data.nodes.length > 0 &&
+        <Graph
+          id="graph-id"
+          data={data}
+          config={graphConfig}
+          onDoubleClickNode={handleIndex}
+        />
+      }
+    </main >
+  )
 }
-
-export default App;
