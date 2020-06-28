@@ -4,6 +4,7 @@ export const graphConfig = {
   nodeHighlightBehavior: true,
   node: {
     size: 120,
+    labelProperty: "name",
   },
   link: {
     highlightColor: 'gray'
@@ -16,3 +17,4 @@ export const graphNodeColor = {
   earth: green[700],
   air: yellow[700]
 }
+
