@@ -51,7 +51,8 @@ export default () => {
       {
         data && data.nodes.length > 0 &&
         <>
-          <Button color='primary' onClick={handleDelete}>Remove all</Button>
+          <Button color='primary' variant='contained' onClick={() => window.location.reload(false)}>PRETTIFY</Button>
+          <Button color='secondary' onClick={handleDelete}>Remove all</Button>
           <Graph
             id="graph-id"
             data={data}
