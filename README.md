@@ -3,7 +3,7 @@
 For fun purpose to support friends.
 
 
-Result link: https://jonesnapoleon.github.io/jonesnapoleon/
+Result link: https://jonesnapoleon.github.io/avatar/
 
 Author: [Jones Napoleon Autumn](https://jonesnapoleon.com)
 
